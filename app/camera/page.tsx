@@ -343,34 +343,59 @@ export default function CameraPage() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-6 md:px-6 md:py-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
+    <main className="min-h-screen px-3 py-5 sm:px-4 md:px-6 md:py-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-5">
         <div className="flex flex-col gap-3 text-center text-white">
           <p className="text-sm uppercase tracking-[0.24em] text-sky-300">Step 2</p>
-          <h1 className="text-4xl font-semibold">
+          <h1 className="text-3xl font-semibold sm:text-4xl">
             {isRetakeMode ? 'Retake photo' : 'Camera capture'}
           </h1>
-          <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-white/80">
-            <span className="rounded-full bg-black/35 px-4 py-2 backdrop-blur-sm">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-white/80 sm:gap-3 sm:text-sm">
+            <span className="rounded-full bg-black/35 px-3 py-2 backdrop-blur-sm sm:px-4">
               {cameraReady ? 'Camera ready' : 'Connecting camera...'}
             </span>
-            <span className="rounded-full bg-black/35 px-4 py-2 backdrop-blur-sm">
+            <span className="rounded-full bg-black/35 px-3 py-2 backdrop-blur-sm sm:px-4">
               {capturedPhotos.length} / {layout.captureTarget} captured
             </span>
-            <span className="rounded-full bg-black/35 px-4 py-2 backdrop-blur-sm">
+            <span className="rounded-full bg-black/35 px-3 py-2 backdrop-blur-sm sm:px-4">
               {isRetakeMode ? '1 replacement shot' : `${remainingShots} shots left`}
             </span>
           </div>
         </div>
 
         <div className="mx-auto w-full max-w-5xl">
-          <div className="relative overflow-hidden rounded-[2.4rem] bg-black shadow-[0_28px_70px_rgba(0,0,0,0.35)]">
+          <div className="mb-3 flex flex-col gap-2 rounded-[1.25rem] bg-black/30 p-3 text-xs text-white backdrop-blur-sm sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:px-4 sm:py-3 sm:text-sm">
+            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-sky-300 sm:text-xs">
+              Camera source
+            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedCameraId}
+                onChange={(event) => setSelectedCameraId(event.target.value)}
+                className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/12 px-3 py-2.5 text-sm text-white outline-none backdrop-blur-sm transition focus:border-sky-300 sm:min-w-56 sm:px-4 sm:py-3"
+              >
+                {cameraOptions.map((option) => (
+                  <option key={option.id} value={option.id} className="text-slate-950">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => void handleRefreshCameras()}
+                className="rounded-full border border-white/20 bg-white/10 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/18 sm:px-4 sm:py-3 sm:text-xs"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-[1.75rem] bg-black shadow-[0_28px_70px_rgba(0,0,0,0.35)] sm:rounded-[2.4rem]">
             <video
               ref={videoRef}
               autoPlay
               muted
               playsInline
-              className={`aspect-video w-full object-cover ${
+              className={`aspect-[4/5] w-full object-cover sm:aspect-video ${
                 filterPreset.previewClassName ? filterPreset.previewClassName : ''
               }`}
             />
@@ -382,7 +407,7 @@ export default function CameraPage() {
 
             {isCountingDown ? (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-                <div className="relative flex h-36 w-36 items-center justify-center rounded-full bg-black/28 backdrop-blur-sm">
+                <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-black/28 backdrop-blur-sm sm:h-36 sm:w-36">
                   <svg
                     className="-rotate-90 absolute inset-0 h-full w-full"
                     viewBox="0 0 120 120"
@@ -409,67 +434,40 @@ export default function CameraPage() {
                       transform="scale(-1, 1) translate(-120, 0)"
                     />
                   </svg>
-                  <span className="text-6xl font-semibold text-white drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]">
+                  <span className="text-5xl font-semibold text-white drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)] sm:text-6xl">
                     {countdownValue}
                   </span>
                 </div>
               </div>
             ) : null}
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-black/92 via-black/45 to-transparent sm:h-44 sm:from-black/85 sm:via-black/35" />
 
-            <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-4 p-4 md:p-6">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div className="flex flex-col gap-2 text-sm text-white">
-                  <span className="text-xs font-medium uppercase tracking-[0.18em] text-sky-300">
-                    Camera source
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={selectedCameraId}
-                      onChange={(event) => setSelectedCameraId(event.target.value)}
-                      className="min-w-56 rounded-full border border-white/20 bg-white/12 px-4 py-3 text-white outline-none backdrop-blur-sm transition focus:border-sky-300"
-                    >
-                      {cameraOptions.map((option) => (
-                        <option key={option.id} value={option.id} className="text-slate-950">
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => void handleRefreshCameras()}
-                      className="rounded-full border border-white/20 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/18"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 self-center">
-                  <button
-                    onClick={removeLastPhoto}
-                    disabled={capturedPhotos.length === 0}
-                    className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white backdrop-blur-sm transition hover:bg-white/18 disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="Remove last shot"
-                  >
-                    ↺
-                  </button>
-                  <button
-                    onClick={startCaptureCountdown}
-                    disabled={!cameraReady || isCountingDown}
-                    className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-amber-400 text-3xl text-slate-950 shadow-[0_12px_30px_rgba(251,191,36,0.35)] transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:border-slate-500 disabled:bg-slate-700 disabled:text-slate-400"
-                    aria-label="Take photo"
-                  >
-                    ⬤
-                  </button>
-                  <button
-                    onClick={addSampleShot}
-                    className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white backdrop-blur-sm transition hover:bg-white/18"
-                    aria-label="Add sample shot"
-                  >
-                    +
-                  </button>
-                </div>
+            <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-3 p-3 sm:gap-4 sm:p-4 md:p-6">
+              <div className="flex items-center justify-center gap-3 sm:gap-4">
+                <button
+                  onClick={removeLastPhoto}
+                  disabled={capturedPhotos.length === 0}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg text-white backdrop-blur-sm transition hover:bg-white/18 disabled:cursor-not-allowed disabled:opacity-40 sm:h-14 sm:w-14 sm:text-xl"
+                  aria-label="Remove last shot"
+                >
+                  ↺
+                </button>
+                <button
+                  onClick={startCaptureCountdown}
+                  disabled={!cameraReady || isCountingDown}
+                  className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-amber-400 text-2xl text-slate-950 shadow-[0_12px_30px_rgba(251,191,36,0.35)] transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:border-slate-500 disabled:bg-slate-700 disabled:text-slate-400 sm:h-20 sm:w-20 sm:text-3xl"
+                  aria-label="Take photo"
+                >
+                  ⬤
+                </button>
+                <button
+                  onClick={addSampleShot}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg text-white backdrop-blur-sm transition hover:bg-white/18 sm:h-14 sm:w-14 sm:text-xl"
+                  aria-label="Add sample shot"
+                >
+                  +
+                </button>
               </div>
             </div>
           </div>
@@ -482,10 +480,10 @@ export default function CameraPage() {
         ) : null}
 
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-3">
-          <p className="text-xs font-medium uppercase tracking-[0.24em] text-sky-300">
+          <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-sky-300 sm:text-xs">
             Filters
           </p>
-          <div className="flex flex-wrap items-start justify-center gap-4">
+          <div className="flex w-full gap-3 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible">
             {FILTER_PRESETS.map((filter) => {
               const isSelected = activeFilterId === filter.id;
 
@@ -493,10 +491,10 @@ export default function CameraPage() {
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilterId(filter.id)}
-                  className="flex flex-col items-center gap-2"
+                  className="flex min-w-14 flex-col items-center gap-2"
                 >
                   <span
-                    className={`flex h-14 w-14 items-center justify-center rounded-full border text-[10px] font-semibold transition ${
+                    className={`flex h-12 w-12 items-center justify-center rounded-full border text-[10px] font-semibold transition sm:h-14 sm:w-14 ${
                       isSelected
                         ? 'border-amber-300 bg-amber-300 text-slate-950 shadow-[0_0_0_6px_rgba(252,211,77,0.16)]'
                         : 'border-white/20 bg-black/30 text-white hover:bg-black/40'
@@ -513,7 +511,7 @@ export default function CameraPage() {
                     {filter.label.slice(0, 3)}
                   </span>
                   <span
-                    className={`text-[11px] font-medium ${
+                    className={`text-[10px] font-medium sm:text-[11px] ${
                       isSelected ? 'text-amber-200' : 'text-white/80'
                     }`}
                   >
@@ -525,20 +523,20 @@ export default function CameraPage() {
           </div>
         </div>
 
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap justify-between gap-3">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-between">
           <button
             onClick={() => {
               clearRetake();
               router.push(isRetakeMode ? '/selection' : '/dashboard');
             }}
-            className="rounded-full border border-white/20 bg-black/30 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-black/40"
+            className="w-full rounded-full border border-white/20 bg-black/30 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-black/40 sm:w-auto"
           >
             {isRetakeMode ? 'Back to selection' : 'Back'}
           </button>
           <button
             onClick={() => router.push('/selection')}
             disabled={!canContinue}
-            className="rounded-full border border-sky-300/60 bg-sky-400/10 px-6 py-3 text-sm font-semibold text-sky-100 backdrop-blur-sm transition hover:bg-sky-300/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className="w-full rounded-full border border-sky-300/60 bg-sky-400/10 px-6 py-3 text-sm font-semibold text-sky-100 backdrop-blur-sm transition hover:bg-sky-300/10 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
           >
             Continue
           </button>
