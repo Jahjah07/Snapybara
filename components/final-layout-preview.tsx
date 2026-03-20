@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import type { Design, LayoutId } from '@/lib/photobooth';
-import { getLayoutOption } from '@/lib/photobooth';
+import type { Design, FontFamilyId, LayoutId } from '@/lib/photobooth';
+import { FONT_OPTIONS, getLayoutOption } from '@/lib/photobooth';
 import type { CapturedPhoto } from '@/lib/store';
 
 type FinalLayoutPreviewProps = {
@@ -23,6 +23,12 @@ export function FinalLayoutPreview({
   if (!layout) {
     return null;
   }
+
+  const stickerElements = design.elements.filter((element) => element.type === 'sticker');
+  const captionElement = design.elements.find((element) => element.id === 'caption-text');
+  const fontFamily =
+    FONT_OPTIONS.find((option) => option.id === (captionElement?.fontFamily as FontFamilyId))
+      ?.family ?? FONT_OPTIONS[0].family;
 
   return (
     <div
@@ -61,9 +67,22 @@ export function FinalLayoutPreview({
         })}
       </div>
 
-      {design.elements.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-3 text-3xl">
-          {design.elements.map((element) => (
+      {captionElement ? (
+        <div
+          className="mt-4 text-center font-semibold"
+          style={{
+            color: captionElement.color ?? '#ffffff',
+            fontFamily,
+            fontSize: `${captionElement.fontSize ?? 36}px`,
+          }}
+        >
+          {captionElement.value}
+        </div>
+      ) : null}
+
+      {stickerElements.length > 0 ? (
+        <div className="mt-4 flex flex-wrap justify-center gap-3 text-3xl">
+          {stickerElements.map((element) => (
             <span key={element.id}>{element.value}</span>
           ))}
         </div>

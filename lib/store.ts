@@ -5,6 +5,7 @@ import {
   DEFAULT_FILTER_ID,
   type Design,
   type FilterId,
+  type FontFamilyId,
   type LayoutId,
   type ThemeId,
 } from '@/lib/photobooth';
@@ -46,6 +47,13 @@ interface PhotoboothStore {
   setTheme: (themeId: ThemeId) => void;
   setBackgroundColor: (backgroundColor: string) => void;
   toggleSticker: (sticker: string) => void;
+  setCaptionText: (text: string) => void;
+  setCaptionStyle: (style: {
+    fontFamily?: FontFamilyId;
+    fontSize?: number;
+    color?: string;
+  }) => void;
+  appendCaptionEmoji: (emoji: string) => void;
   reset: () => void;
 }
 
@@ -183,6 +191,89 @@ export const usePhotoboothStore = create<PhotoboothStore>()(
                       value: sticker,
                     },
                   ],
+            },
+          };
+        }),
+      setCaptionText: (text) =>
+        set((state) => {
+          const trimmedText = text.trim();
+          const otherElements = state.design.elements.filter(
+            (element) => element.id !== 'caption-text'
+          );
+
+          return {
+            design: {
+              ...state.design,
+              elements: trimmedText
+                ? [
+                    ...otherElements,
+                    {
+                      id: 'caption-text',
+                      type: 'text',
+                      value: trimmedText,
+                      fontFamily:
+                        state.design.elements.find((element) => element.id === 'caption-text')
+                          ?.fontFamily ?? 'fun',
+                      fontSize:
+                        state.design.elements.find((element) => element.id === 'caption-text')
+                          ?.fontSize ?? 36,
+                      color:
+                        state.design.elements.find((element) => element.id === 'caption-text')
+                          ?.color ?? '#ffffff',
+                    },
+                  ]
+                : otherElements,
+            },
+          };
+        }),
+      setCaptionStyle: (style) =>
+        set((state) => ({
+          design: {
+            ...state.design,
+            elements: state.design.elements.map((element) =>
+              element.id === 'caption-text'
+                ? {
+                    ...element,
+                    ...style,
+                  }
+                : element
+            ),
+          },
+        })),
+      appendCaptionEmoji: (emoji) =>
+        set((state) => {
+          const caption = state.design.elements.find((element) => element.id === 'caption-text');
+
+          if (!caption) {
+            return {
+              design: {
+                ...state.design,
+                elements: [
+                  ...state.design.elements,
+                  {
+                    id: 'caption-text',
+                    type: 'text',
+                    value: emoji,
+                    fontFamily: 'fun',
+                    fontSize: 36,
+                    color: '#ffffff',
+                  },
+                ],
+              },
+            };
+          }
+
+          return {
+            design: {
+              ...state.design,
+              elements: state.design.elements.map((element) =>
+                element.id === 'caption-text'
+                  ? {
+                      ...element,
+                      value: `${element.value}${emoji}`,
+                    }
+                  : element
+              ),
             },
           };
         }),

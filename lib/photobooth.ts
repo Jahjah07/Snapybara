@@ -1,6 +1,7 @@
 export type LayoutId = '1x2' | 'hero-3' | 'hero-5' | '2x2' | '2x3' | '3x3';
 export type FilterId = 'original' | 'bw' | 'sepia' | 'cool';
 export type ThemeId = 'clean' | 'midnight' | 'birthday' | 'custom';
+export type FontFamilyId = 'fun' | 'marker' | 'classic' | 'mono';
 
 export type LayoutOption = {
   id: LayoutId;
@@ -36,8 +37,11 @@ export type ThemePreset = {
 
 export type DesignElement = {
   id: string;
-  type: 'sticker';
+  type: 'sticker' | 'text';
   value: string;
+  fontFamily?: FontFamilyId;
+  fontSize?: number;
+  color?: string;
 };
 
 export type Design = {
@@ -199,6 +203,13 @@ export const THEME_PRESETS: ThemePreset[] = [
 ];
 
 export const STICKER_OPTIONS = ['🎉', '✨', '📸', '💖', '🎂', '⭐'];
+export const TEXT_EMOJI_OPTIONS = ['✨', '🎉', '💖', '📸', '🎂', '🥳'];
+export const FONT_OPTIONS: Array<{ id: FontFamilyId; label: string; family: string }> = [
+  { id: 'fun', label: 'Fun', family: '"Comic Sans MS", "Marker Felt", cursive' },
+  { id: 'marker', label: 'Marker', family: '"Trebuchet MS", "Avenir Next", sans-serif' },
+  { id: 'classic', label: 'Classic', family: '"Georgia", serif' },
+  { id: 'mono', label: 'Mono', family: '"IBM Plex Mono", "Consolas", monospace' },
+];
 
 export const DEFAULT_FILTER_ID: FilterId = 'original';
 export const DEFAULT_THEME_ID: ThemeId = 'clean';

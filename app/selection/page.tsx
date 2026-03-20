@@ -221,8 +221,10 @@ export default function SelectionPage() {
                 const selected = selectedIndex >= 0 && !photo.isDeleted;
 
                 return (
-                  <button
+                  <div
                     key={photo.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       if (photo.isDeleted) {
                         beginPhotoRetake(photo.id);
@@ -231,6 +233,19 @@ export default function SelectionPage() {
                       }
 
                       togglePhoto(photo.id);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+
+                        if (photo.isDeleted) {
+                          beginPhotoRetake(photo.id);
+                          router.push('/camera');
+                          return;
+                        }
+
+                        togglePhoto(photo.id);
+                      }
                     }}
                     className={`overflow-hidden rounded-[1.5rem] border text-left transition ${
                       selected
@@ -286,7 +301,7 @@ export default function SelectionPage() {
                       <span>{new Date(photo.takenAt).toLocaleTimeString()}</span>
                       <span className="font-medium uppercase">{photo.filterId}</span>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

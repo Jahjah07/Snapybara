@@ -15,6 +15,8 @@ type CameraOption = {
   label: string;
 };
 
+type CaptureMode = 'manual' | 'automatic';
+
 const AUTO_FRONT_CAMERA = 'auto-front';
 const AUTO_BACK_CAMERA = 'auto-back';
 const COUNTDOWN_SECONDS = 3;
@@ -52,11 +54,13 @@ export default function CameraPage() {
   const countdownIntervalRef = useRef<number | null>(null);
   const captureTimeoutRef = useRef<number | null>(null);
   const countdownActiveRef = useRef(false);
+  const autoSequenceRef = useRef(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [countdownValue, setCountdownValue] = useState<number | null>(null);
   const [countdownProgress, setCountdownProgress] = useState(1);
   const [showFlash, setShowFlash] = useState(false);
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('automatic');
   const [cameraOptions, setCameraOptions] = useState<CameraOption[]>([
     { id: AUTO_FRONT_CAMERA, label: 'Front camera' },
     { id: AUTO_BACK_CAMERA, label: 'Back camera' },
@@ -194,6 +198,7 @@ export default function CameraPage() {
     return () => {
       cancelled = true;
       clearCountdownTimers();
+      autoSequenceRef.current = false;
       navigator.mediaDevices?.removeEventListener?.('devicechange', handleDeviceChange);
       window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -217,17 +222,8 @@ export default function CameraPage() {
     }
   }, [capturedPhotos, layout, retakePhotoId, router]);
 
-  if (!layout) {
-    return null;
-  }
-
   const filterPreset = getFilterPreset(activeFilterId);
   const activeCapturedPhotos = capturedPhotos.filter((photo) => !photo.isDeleted);
-  const remainingShots =
-    retakePhotoId !== null
-      ? 1
-      : Math.max(layout.captureTarget - activeCapturedPhotos.length, 0);
-  const canContinue = activeCapturedPhotos.length >= layout.slots;
   const isCountingDown = countdownValue !== null;
   const isRetakeMode = retakePhotoId !== null;
 
@@ -235,7 +231,7 @@ export default function CameraPage() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    if (!video || !canvas) {
+    if (!layout || !video || !canvas) {
       return;
     }
 
@@ -258,12 +254,23 @@ export default function CameraPage() {
     };
 
     if (retakePhotoId !== null) {
+      autoSequenceRef.current = false;
       completePhotoRetake(photoData);
       router.push('/selection');
       return;
     }
 
     addPhoto(photoData);
+    const nextPhotoCount = activeCapturedPhotos.length + 1;
+
+    if (autoSequenceRef.current && nextPhotoCount < layout.captureTarget) {
+      window.setTimeout(() => {
+        startCaptureCountdown();
+      }, 250);
+      return;
+    }
+
+    autoSequenceRef.current = false;
   };
 
   const startCaptureCountdown = () => {
@@ -276,12 +283,12 @@ export default function CameraPage() {
     setCountdownValue(COUNTDOWN_SECONDS);
     setCountdownProgress(1);
 
-    const startedAt = Date.now();
     const totalDuration = COUNTDOWN_SECONDS * 1000;
+    let elapsedMs = 0;
 
     progressIntervalRef.current = window.setInterval(() => {
-      const elapsed = Date.now() - startedAt;
-      const nextProgress = Math.max(1 - elapsed / totalDuration, 0);
+      elapsedMs += 16;
+      const nextProgress = Math.max(1 - elapsedMs / totalDuration, 0);
       setCountdownProgress(nextProgress);
     }, 16);
 
@@ -309,6 +316,16 @@ export default function CameraPage() {
       });
     }, 1000);
   };
+
+  if (!layout) {
+    return null;
+  }
+
+  const remainingShots =
+    retakePhotoId !== null
+      ? 1
+      : Math.max(layout.captureTarget - activeCapturedPhotos.length, 0);
+  const canContinue = activeCapturedPhotos.length >= layout.slots;
 
   const addSampleShot = () => {
     const colorMap: Record<FilterId, string> = {
@@ -365,27 +382,54 @@ export default function CameraPage() {
 
         <div className="mx-auto w-full max-w-5xl">
           <div className="mb-3 flex flex-col gap-2 rounded-[1.25rem] bg-black/30 p-3 text-xs text-white backdrop-blur-sm sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:px-4 sm:py-3 sm:text-sm">
-            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-sky-300 sm:text-xs">
-              Camera source
-            </span>
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedCameraId}
-                onChange={(event) => setSelectedCameraId(event.target.value)}
-                className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/12 px-3 py-2.5 text-sm text-white outline-none backdrop-blur-sm transition focus:border-sky-300 sm:min-w-56 sm:px-4 sm:py-3"
-              >
-                {cameraOptions.map((option) => (
-                  <option key={option.id} value={option.id} className="text-slate-950">
-                    {option.label}
-                  </option>
+            <div className="flex flex-col gap-2 sm:flex-1">
+              <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-sky-300 sm:text-xs">
+                Camera source
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedCameraId}
+                  onChange={(event) => setSelectedCameraId(event.target.value)}
+                  className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/12 px-3 py-2.5 text-sm text-white outline-none backdrop-blur-sm transition focus:border-sky-300 sm:min-w-56 sm:px-4 sm:py-3"
+                >
+                  {cameraOptions.map((option) => (
+                    <option key={option.id} value={option.id} className="text-slate-950">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => void handleRefreshCameras()}
+                  className="rounded-full border border-white/20 bg-white/10 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/18 sm:px-4 sm:py-3 sm:text-xs"
+                >
+                  Refresh
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:min-w-56">
+              <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-sky-300 sm:text-xs">
+                Capture mode
+              </span>
+              <div className="grid grid-cols-2 gap-2 rounded-full bg-white/8 p-1">
+                {(['manual', 'automatic'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => {
+                      setCaptureMode(mode);
+                      if (mode === 'manual') {
+                        autoSequenceRef.current = false;
+                      }
+                    }}
+                    className={`rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition sm:text-xs ${
+                      captureMode === mode
+                        ? 'bg-amber-300 text-slate-950'
+                        : 'bg-transparent text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {mode}
+                  </button>
                 ))}
-              </select>
-              <button
-                onClick={() => void handleRefreshCameras()}
-                className="rounded-full border border-white/20 bg-white/10 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/18 sm:px-4 sm:py-3 sm:text-xs"
-              >
-                Refresh
-              </button>
+              </div>
             </div>
           </div>
 
@@ -454,7 +498,13 @@ export default function CameraPage() {
                   ↺
                 </button>
                 <button
-                  onClick={startCaptureCountdown}
+                  onClick={() => {
+                    if (captureMode === 'automatic' && !isRetakeMode) {
+                      autoSequenceRef.current = true;
+                    }
+
+                    startCaptureCountdown();
+                  }}
                   disabled={!cameraReady || isCountingDown}
                   className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-amber-400 text-2xl text-slate-950 shadow-[0_12px_30px_rgba(251,191,36,0.35)] transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:border-slate-500 disabled:bg-slate-700 disabled:text-slate-400 sm:h-20 sm:w-20 sm:text-3xl"
                   aria-label="Take photo"
