@@ -7,6 +7,7 @@ import {
   type FilterId,
   type FontFamilyId,
   type LayoutId,
+  type LayoutOrientation,
   type ThemeId,
 } from '@/lib/photobooth';
 
@@ -27,6 +28,7 @@ type SessionStage =
 
 interface PhotoboothStore {
   selectedLayout: LayoutId | null;
+  selectedLayoutOrientation: LayoutOrientation;
   activeFilterId: FilterId;
   capturedPhotos: CapturedPhoto[];
   selectedPhotoIds: string[];
@@ -35,6 +37,7 @@ interface PhotoboothStore {
   sessionStage: SessionStage;
   startedAt: string | null;
   startSession: (layout: LayoutId) => void;
+  setSelectedLayoutOrientation: (orientation: LayoutOrientation) => void;
   setSessionStage: (stage: SessionStage) => void;
   setActiveFilterId: (filterId: FilterId) => void;
   addPhoto: (photo: { dataUrl: string; filterId: FilterId }) => string;
@@ -59,6 +62,7 @@ interface PhotoboothStore {
 
 const initialState = {
   selectedLayout: null as LayoutId | null,
+  selectedLayoutOrientation: 'portrait' as LayoutOrientation,
   activeFilterId: DEFAULT_FILTER_ID,
   capturedPhotos: [] as CapturedPhoto[],
   selectedPhotoIds: [] as string[],
@@ -75,6 +79,7 @@ export const usePhotoboothStore = create<PhotoboothStore>()(
       startSession: (layout) =>
         set({
           selectedLayout: layout,
+          selectedLayoutOrientation: 'portrait',
           activeFilterId: DEFAULT_FILTER_ID,
           capturedPhotos: [],
           selectedPhotoIds: [],
@@ -83,6 +88,8 @@ export const usePhotoboothStore = create<PhotoboothStore>()(
           sessionStage: 'camera',
           startedAt: new Date().toISOString(),
         }),
+      setSelectedLayoutOrientation: (selectedLayoutOrientation) =>
+        set({ selectedLayoutOrientation }),
       setSessionStage: (sessionStage) => set({ sessionStage }),
       setActiveFilterId: (activeFilterId) => set({ activeFilterId }),
       addPhoto: ({ dataUrl, filterId }) => {
@@ -196,7 +203,7 @@ export const usePhotoboothStore = create<PhotoboothStore>()(
         }),
       setCaptionText: (text) =>
         set((state) => {
-          const trimmedText = text.trim();
+          const hasVisibleText = text.trim().length > 0;
           const otherElements = state.design.elements.filter(
             (element) => element.id !== 'caption-text'
           );
@@ -204,13 +211,13 @@ export const usePhotoboothStore = create<PhotoboothStore>()(
           return {
             design: {
               ...state.design,
-              elements: trimmedText
+              elements: hasVisibleText
                 ? [
                     ...otherElements,
                     {
                       id: 'caption-text',
                       type: 'text',
-                      value: trimmedText,
+                      value: text,
                       fontFamily:
                         state.design.elements.find((element) => element.id === 'caption-text')
                           ?.fontFamily ?? 'fun',
@@ -284,6 +291,7 @@ export const usePhotoboothStore = create<PhotoboothStore>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         selectedLayout: state.selectedLayout,
+        selectedLayoutOrientation: state.selectedLayoutOrientation,
         activeFilterId: state.activeFilterId,
         capturedPhotos: state.capturedPhotos,
         selectedPhotoIds: state.selectedPhotoIds,

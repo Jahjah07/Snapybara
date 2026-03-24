@@ -14,6 +14,7 @@ export default function DownloadPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const {
     selectedLayout,
+    selectedLayoutOrientation,
     capturedPhotos,
     selectedPhotoIds,
     design,
@@ -21,7 +22,7 @@ export default function DownloadPage() {
     reset,
     setSessionStage,
   } = usePhotoboothStore();
-  const layout = getLayoutOption(selectedLayout);
+  const layout = getLayoutOption(selectedLayout, selectedLayoutOrientation);
   const selectedPhotos = useMemo(
     () => capturedPhotos.filter((photo) => selectedPhotoIds.includes(photo.id)),
     [capturedPhotos, selectedPhotoIds]
@@ -51,6 +52,7 @@ export default function DownloadPage() {
       const finalLayoutDataUrl = await renderLayoutToCanvas({
         canvas: canvasRef.current,
         layoutId: layout.id,
+        layoutOrientation: layout.orientation,
         photos: selectedPhotos,
         design,
       });
@@ -90,6 +92,7 @@ export default function DownloadPage() {
             app: 'Snapybara',
             startedAt,
             layout: layout.id,
+            layoutOrientation: layout.orientation,
             captureTarget: layout.captureTarget,
             selectedCount: selectedPhotos.length,
             design,
@@ -104,7 +107,7 @@ export default function DownloadPage() {
       const url = URL.createObjectURL(zipBlob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `snapybara-${layout.id}.zip`;
+      anchor.download = `snapybara-${layout.id}-${layout.orientation}.zip`;
       anchor.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -133,6 +136,7 @@ export default function DownloadPage() {
           <div className="mt-8">
             <FinalLayoutPreview
               layoutId={layout.id}
+              layoutOrientation={layout.orientation}
               photos={selectedPhotos}
               design={design}
               tileClassName="aspect-square min-h-28"

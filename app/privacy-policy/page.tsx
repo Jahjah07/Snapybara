@@ -1,6 +1,19 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'Learn how Snapybara handles camera access and why your photos stay on your device.',
+};
 
 export default function PrivacyPolicyPage() {
+  const privacyPoints = [
+    'Your photos are not uploaded to our servers.',
+    'We do not collect personal information from your photobooth session.',
+    'Camera permission is only used so you can take photos inside the app.',
+  ];
+
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto max-w-4xl rounded-[2rem] bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur md:p-12">
@@ -8,17 +21,40 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
-          Placeholder privacy policy page
+          Your privacy comes first.
         </h1>
-        <div className="mt-6 space-y-5 text-base leading-8 text-slate-600">
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
+          Snapybara is designed to keep the photobooth experience personal. Your
+          photos and camera activity stay on your device, so the moments you
+          capture remain in your hands.
+        </p>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {privacyPoints.map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-amber-100 bg-amber-50/80 px-4 py-4 text-sm font-medium leading-6 text-slate-700"
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 space-y-5 text-base leading-8 text-slate-600">
           <p>
-            This page is ready for your actual privacy policy. Later, you can describe
-            how captured photos are stored, how long they are kept, whether they are
-            shared, and how guests can request deletion.
+            We do not collect, store, or share your photos or personal data.
+            There are no hidden uploads, no background syncing, and no tracking
+            tied to the images you take through the app.
           </p>
           <p>
-            Since this app works with camera input and downloadable images, it is a good
-            place to document consent, device usage, and data retention clearly.
+            The app only requests camera access when you choose to use the
+            camera experience. That permission is used solely to let you preview
+            and capture photos inside Snapybara.
+          </p>
+          <p>
+            Once a photo is taken, it stays with you as part of your local
+            session and export flow. In short: your images are yours, and
+            Snapybara is built to respect that.
           </p>
         </div>
 

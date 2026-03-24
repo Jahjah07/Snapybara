@@ -1,12 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import type { Design, FontFamilyId, LayoutId } from '@/lib/photobooth';
+import type { Design, FontFamilyId, LayoutId, LayoutOrientation } from '@/lib/photobooth';
 import { FONT_OPTIONS, getLayoutOption } from '@/lib/photobooth';
 import type { CapturedPhoto } from '@/lib/store';
 
 type FinalLayoutPreviewProps = {
   layoutId: LayoutId;
+  layoutOrientation?: LayoutOrientation;
   photos: CapturedPhoto[];
   design: Design;
   tileClassName?: string;
@@ -14,11 +15,12 @@ type FinalLayoutPreviewProps = {
 
 export function FinalLayoutPreview({
   layoutId,
+  layoutOrientation = 'portrait',
   photos,
   design,
   tileClassName = 'aspect-square min-h-32',
 }: FinalLayoutPreviewProps) {
-  const layout = getLayoutOption(layoutId);
+  const layout = getLayoutOption(layoutId, layoutOrientation);
 
   if (!layout) {
     return null;
@@ -46,23 +48,23 @@ export function FinalLayoutPreview({
           const cell = layout.cells[index];
 
           return (
-          <div
-            key={photo.id}
-            className={`relative overflow-hidden rounded-[1.5rem] bg-white/70 ${tileClassName}`}
-            style={{
-              gridColumn: `${cell.col} / span ${cell.colSpan ?? 1}`,
-              gridRow: `${cell.row} / span ${cell.rowSpan ?? 1}`,
-            }}
-          >
-            <Image
-              src={photo.dataUrl}
-              alt="Selected photobooth shot"
-              fill
-              unoptimized
-              sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 45vw"
-              className="object-cover"
-            />
-          </div>
+            <div
+              key={photo.id}
+              className={`relative overflow-hidden rounded-[1.5rem] bg-white/70 ${tileClassName}`}
+              style={{
+                gridColumn: `${cell.col} / span ${cell.colSpan ?? 1}`,
+                gridRow: `${cell.row} / span ${cell.rowSpan ?? 1}`,
+              }}
+            >
+              <Image
+                src={photo.dataUrl}
+                alt="Selected photobooth shot"
+                fill
+                unoptimized
+                sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 45vw"
+                className="object-cover"
+              />
+            </div>
           );
         })}
       </div>

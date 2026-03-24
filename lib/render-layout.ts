@@ -1,4 +1,4 @@
-import type { FontFamilyId, LayoutId } from '@/lib/photobooth';
+import type { FontFamilyId, LayoutId, LayoutOrientation } from '@/lib/photobooth';
 import { FONT_OPTIONS, getLayoutOption } from '@/lib/photobooth';
 import type { Design } from '@/lib/photobooth';
 import type { CapturedPhoto } from '@/lib/store';
@@ -69,15 +69,17 @@ const getCoverCrop = (
 export const renderLayoutToCanvas = async ({
   canvas,
   layoutId,
+  layoutOrientation = 'portrait',
   photos,
   design,
 }: {
   canvas: HTMLCanvasElement;
   layoutId: LayoutId;
+  layoutOrientation?: LayoutOrientation;
   photos: CapturedPhoto[];
   design: Design;
 }) => {
-  const layout = getLayoutOption(layoutId);
+  const layout = getLayoutOption(layoutId, layoutOrientation);
   const context = canvas.getContext('2d');
 
   if (!layout || !context) {

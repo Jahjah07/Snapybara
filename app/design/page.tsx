@@ -17,6 +17,7 @@ export default function DesignPage() {
   const router = useRouter();
   const {
     selectedLayout,
+    selectedLayoutOrientation,
     capturedPhotos,
     selectedPhotoIds,
     design,
@@ -28,7 +29,7 @@ export default function DesignPage() {
     appendCaptionEmoji,
     setSessionStage,
   } = usePhotoboothStore();
-  const layout = getLayoutOption(selectedLayout);
+  const layout = getLayoutOption(selectedLayout, selectedLayoutOrientation);
   const [activeTab, setActiveTab] = useState<'background' | 'themes' | 'stickers' | 'text'>(
     'background'
   );
@@ -86,7 +87,12 @@ export default function DesignPage() {
           </p>
 
           <div className="mt-8">
-            <FinalLayoutPreview layoutId={layout.id} photos={selectedPhotos} design={design} />
+            <FinalLayoutPreview
+              layoutId={layout.id}
+              layoutOrientation={layout.orientation}
+              photos={selectedPhotos}
+              design={design}
+            />
           </div>
         </section>
 

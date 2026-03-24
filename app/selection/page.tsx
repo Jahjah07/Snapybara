@@ -10,15 +10,17 @@ export default function SelectionPage() {
   const router = useRouter();
   const {
     selectedLayout,
+    selectedLayoutOrientation,
     capturedPhotos,
     selectedPhotoIds,
     setSelectedPhotoIds,
+    setSelectedLayoutOrientation,
     beginPhotoRetake,
     clearRetake,
     removePhotoById,
     setSessionStage,
   } = usePhotoboothStore();
-  const layout = getLayoutOption(selectedLayout);
+  const layout = getLayoutOption(selectedLayout, selectedLayoutOrientation);
   const defaultSelectionIds = useMemo(
     () =>
       selectedPhotoIds.length > 0
@@ -140,6 +142,30 @@ export default function SelectionPage() {
           <span className="rounded-full bg-amber-100 px-4 py-2 text-amber-900">
             {capturedPhotos.length} shots available
           </span>
+          {layout.canRotate ? (
+            <div className="flex items-center gap-2 rounded-full bg-white px-2 py-2 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+              <button
+                onClick={() => setSelectedLayoutOrientation('portrait')}
+                className={`rounded-full px-4 py-2 font-semibold transition ${
+                  layout.orientation === 'portrait'
+                    ? 'bg-slate-950 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                Portrait
+              </button>
+              <button
+                onClick={() => setSelectedLayoutOrientation('landscape')}
+                className={`rounded-full px-4 py-2 font-semibold transition ${
+                  layout.orientation === 'landscape'
+                    ? 'bg-slate-950 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                Landscape
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
@@ -149,7 +175,8 @@ export default function SelectionPage() {
                 Layout Preview
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Slot 1 is filled first, then Slot 2, and so on.
+                Slot 1 is filled first, then Slot 2, and so on. Switch orientation
+                anytime before moving to design.
               </p>
             </div>
 

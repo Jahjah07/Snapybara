@@ -1,7 +1,18 @@
 export type LayoutId = '1x2' | 'hero-3' | 'hero-5' | '2x2' | '2x3' | '3x3';
+export type LayoutOrientation = 'portrait' | 'landscape';
 export type FilterId = 'original' | 'bw' | 'sepia' | 'cool';
 export type ThemeId = 'clean' | 'midnight' | 'birthday' | 'custom';
-export type FontFamilyId = 'fun' | 'marker' | 'classic' | 'mono';
+export type FontFamilyId =
+  | 'fun'
+  | 'marker'
+  | 'classic'
+  | 'mono'
+  | 'impact'
+  | 'rounded'
+  | 'elegant'
+  | 'handwritten'
+  | 'clean'
+  | 'poster';
 
 export type LayoutOption = {
   id: LayoutId;
@@ -12,6 +23,8 @@ export type LayoutOption = {
   captureTarget: number;
   description: string;
   cells: LayoutCell[];
+  orientation: LayoutOrientation;
+  canRotate: boolean;
 };
 
 export type LayoutCell = {
@@ -63,6 +76,8 @@ export const LAYOUT_OPTIONS: LayoutOption[] = [
       { col: 1, row: 1 },
       { col: 2, row: 1 },
     ],
+    orientation: 'portrait',
+    canRotate: true,
   },
   {
     id: 'hero-3',
@@ -77,6 +92,8 @@ export const LAYOUT_OPTIONS: LayoutOption[] = [
       { col: 3, row: 1 },
       { col: 3, row: 2 },
     ],
+    orientation: 'portrait',
+    canRotate: true,
   },
   {
     id: 'hero-5',
@@ -93,6 +110,8 @@ export const LAYOUT_OPTIONS: LayoutOption[] = [
       { col: 3, row: 2 },
       { col: 4, row: 2 },
     ],
+    orientation: 'portrait',
+    canRotate: true,
   },
   {
     id: '2x2',
@@ -108,6 +127,8 @@ export const LAYOUT_OPTIONS: LayoutOption[] = [
       { col: 1, row: 2 },
       { col: 2, row: 2 },
     ],
+    orientation: 'portrait',
+    canRotate: false,
   },
   {
     id: '2x3',
@@ -125,6 +146,8 @@ export const LAYOUT_OPTIONS: LayoutOption[] = [
       { col: 2, row: 2 },
       { col: 3, row: 2 },
     ],
+    orientation: 'portrait',
+    canRotate: true,
   },
   {
     id: '3x3',
@@ -145,6 +168,8 @@ export const LAYOUT_OPTIONS: LayoutOption[] = [
       { col: 2, row: 3 },
       { col: 3, row: 3 },
     ],
+    orientation: 'portrait',
+    canRotate: false,
   },
 ];
 
@@ -209,6 +234,20 @@ export const FONT_OPTIONS: Array<{ id: FontFamilyId; label: string; family: stri
   { id: 'marker', label: 'Marker', family: '"Trebuchet MS", "Avenir Next", sans-serif' },
   { id: 'classic', label: 'Classic', family: '"Georgia", serif' },
   { id: 'mono', label: 'Mono', family: '"IBM Plex Mono", "Consolas", monospace' },
+  { id: 'impact', label: 'Impact', family: '"Impact", "Arial Black", sans-serif' },
+  {
+    id: 'rounded',
+    label: 'Rounded',
+    family: '"Arial Rounded MT Bold", "Trebuchet MS", sans-serif',
+  },
+  { id: 'elegant', label: 'Elegant', family: '"Palatino Linotype", "Book Antiqua", serif' },
+  {
+    id: 'handwritten',
+    label: 'Handwritten',
+    family: '"Bradley Hand", "Comic Sans MS", "Marker Felt", cursive',
+  },
+  { id: 'clean', label: 'Clean', family: '"Verdana", "Geneva", sans-serif' },
+  { id: 'poster', label: 'Poster', family: '"Gill Sans", "Trebuchet MS", sans-serif' },
 ];
 
 export const DEFAULT_FILTER_ID: FilterId = 'original';
@@ -221,8 +260,40 @@ export const DEFAULT_DESIGN: Design = {
   elements: [],
 };
 
-export const getLayoutOption = (layoutId: LayoutId | null) =>
-  LAYOUT_OPTIONS.find((layout) => layout.id === layoutId) ?? null;
+const LANDSCAPE_LAYOUT_OPTIONS: Record<LayoutId, LayoutOption> = Object.fromEntries(
+  LAYOUT_OPTIONS.filter((layout) => layout.canRotate).map((layout) => [
+    layout.id,
+    {
+      ...layout,
+      rows: layout.cols,
+      cols: layout.rows,
+      cells: layout.cells.map((cell) => ({
+        col: cell.row,
+        row: cell.col,
+        colSpan: cell.rowSpan,
+        rowSpan: cell.colSpan,
+      })),
+      orientation: 'landscape' as const,
+    },
+  ])
+) as Record<LayoutId, LayoutOption>;
+
+export const getLayoutOption = (
+  layoutId: LayoutId | null,
+  orientation: LayoutOrientation = 'portrait'
+) => {
+  const baseLayout = LAYOUT_OPTIONS.find((layout) => layout.id === layoutId);
+
+  if (!baseLayout) {
+    return null;
+  }
+
+  if (orientation === 'portrait' || !baseLayout.canRotate) {
+    return baseLayout;
+  }
+
+  return LANDSCAPE_LAYOUT_OPTIONS[baseLayout.id] ?? baseLayout;
+};
 
 export const getFilterPreset = (filterId: FilterId) =>
   FILTER_PRESETS.find((filter) => filter.id === filterId) ?? FILTER_PRESETS[0];
